@@ -99,25 +99,18 @@ pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !v
         .WILD4 => "+4",
     };
 
+    const padding: u8 = switch (value.len) {
+        2 => 0,
+        else => 1
+    };
+    const spaces = " ";
+
     try moveCursor(writer, row, col);
     try writer.print("┌───┐\n", .{});
     try moveCursor(writer, row + 1, col);
     try writer.print("│   │\n", .{});
-    const padding: u8 = switch (value.len) {
-        1 => 1,
-        2 => 0,
-        else => 1
-    };
-
-    const spaces = "     ";
-
     try moveCursor(writer, row + 2, col);
-    try writer.print("│{s}{s}{s}│\n", .{
-        spaces[0..padding],
-        value,
-        " ",
-    });
-
+    try writer.print("│{s}{s}{s}│\n", .{ spaces[0..padding], value, " " });
     try moveCursor(writer, row + 3, col);
     try writer.print("│   │\n", .{});
     try moveCursor(writer, row + 4, col);
