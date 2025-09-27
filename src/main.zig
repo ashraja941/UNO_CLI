@@ -1,11 +1,16 @@
 const std = @import("std");
 const ui = @import("ui.zig");
+const builtin = @import("builtin");
 
 pub const std_options = @import("logger.zig").options;
 const WinKernel = std.os.windows.kernel32;
 
 pub fn main() !void {
-    _ = WinKernel.SetConsoleOutputCP(65001);
+    // set windows to use UTF-8 Characters
+    if (builtin.os.tag == .windows) {
+        _ = WinKernel.SetConsoleOutputCP(65001);
+    }
+
     var stdoutBuffer: [1024]u8 = undefined;
     var getStdOut = std.fs.File.stdout().writer(&stdoutBuffer);
     const stdout = &getStdOut.interface;
