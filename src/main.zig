@@ -16,7 +16,15 @@ pub fn main() !void {
     const stdout = &getStdOut.interface;
 
     // try stdout.print("{any}", .{@TypeOf(stdout)}); // *Io.Writer
-    ui.main();
+
+    try ui.setColor(stdout, .RED);
+    std.debug.print("test", .{});
+
+    try ui.clearScreen(stdout);
+
+    try ui.setColor(stdout, .YELLOW);
+    try ui.moveCursor(stdout, 3, 5);
+    std.debug.print("changed", .{});
     std.log.info("main", .{});
 
     try stdout.flush();
