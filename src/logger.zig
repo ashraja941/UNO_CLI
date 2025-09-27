@@ -1,7 +1,7 @@
 const std = @import("std");
 
 pub const options: std.Options = .{
-    .log_level = .info,
+    .log_level = .warn,
     .logFn = logger,
 };
 
