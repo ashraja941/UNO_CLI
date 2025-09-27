@@ -1,6 +1,8 @@
 const std = @import("std");
 const log = std.log.scoped(.ui);
-const cardColor = @import("card.zig").cardColor;
+const cardColor = @import("card.zig").CardColor;
+const cardType = @import("card.zig").CardType;
+const Card = @import("card.zig").Card;
 
 const uiColor = enum { RED, BLUE, GREEN, YELLOW, ORANGE, WHITE, RESET };
 
@@ -69,10 +71,61 @@ pub fn setColor(writer: *std.Io.Writer, fg: ?uiColor, bg: ?uiColor) !void {
     try writer.flush();
 }
 
+pub fn homeCursor(writer: *std.Io.Writer) !void {
+    try writer.print("{s}", .{Ansi.cursorHome});
+    try writer.flush();
+}
+
 // TODO: add a check for out of bounds
 pub fn moveCursor(writer: *std.Io.Writer, row: usize, col: usize) !void {
     try writer.print("\x1B[{d};{d}H", .{ row, col });
     try writer.flush();
+}
+
+pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !void {
+    const color = CardToUiColor(card.color);
+    try setColor(writer, color, null);
+
+    var buf: [3]u8 = undefined;
+    const value = switch (card.value) {
+        .NUMBER => |n| blk: {
+            const num = try std.fmt.bufPrint(&buf, "{}", .{n});
+            break :blk num;
+        },
+        .SKIP => "⦸",
+        .DRAW2 => "+2",
+        .REVERSE => "↺",
+        .WILD => "★",
+        .WILD4 => "+4",
+    };
+
+    try moveCursor(writer, row, col);
+    try writer.print("┌───┐\n", .{});
+    try moveCursor(writer, row + 1, col);
+    try writer.print("│   │\n", .{});
+    const padding: u8 = switch (value.len) {
+        1 => 1,
+        2 => 0,
+        else => 1
+    };
+
+    const spaces = "     ";
+
+    try moveCursor(writer, row + 2, col);
+    try writer.print("│{s}{s}{s}│\n", .{
+        spaces[0..padding],
+        value,
+        " ",
+    });
+
+    try moveCursor(writer, row + 3, col);
+    try writer.print("│   │\n", .{});
+    try moveCursor(writer, row + 4, col);
+    try writer.print("└───┘\n", .{});
+
+    try setColor(writer, null, null);
+    try writer.flush();
+    try homeCursor(writer);
 }
 
 pub fn main() void {

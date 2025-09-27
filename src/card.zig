@@ -10,7 +10,7 @@ pub const InitializationError = error{
 
 pub const CardColor = enum { RED, BLUE, GREEN, YELLOW, WILDCOLOR };
 
-const CardType = union(enum) {
+pub const CardType = union(enum) {
     NUMBER: u4,
     SKIP: void,
     REVERSE: void,
@@ -19,23 +19,20 @@ const CardType = union(enum) {
     WILD4: void,
 };
 
-const Card = struct {
+pub const Card = struct {
     color: CardColor,
     value: CardType,
 
     pub fn init(color: CardColor, value: CardType) InitializationError!Card {
         switch (value) {
             .NUMBER => |n| {
-                log.err("The number of the card should be under 12 and shouldn't have wild color", .{});
                 if (n > 12) return InitializationError.InvalidNumber;
                 if (color == .WILDCOLOR) return InitializationError.InvalidColor;
             },
             .SKIP, .REVERSE, .DRAW2 => {
-                log.err("The SKIP, REVERSE and DRAW2 card shouldn't have wild color", .{});
                 if (color == .WILDCOLOR) return InitializationError.InvalidColor;
             },
             .WILD, .WILD4 => {
-                log.err("WILD Cards should have the WILD COLOR", .{});
                 if (color != .WILDCOLOR) return InitializationError.InvalidColor;
             }
         }

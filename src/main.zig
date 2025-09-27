@@ -1,5 +1,6 @@
 const std = @import("std");
 const ui = @import("ui.zig");
+const card = @import("card.zig");
 const builtin = @import("builtin");
 
 pub const std_options = @import("logger.zig").options;
@@ -17,15 +18,15 @@ pub fn main() !void {
 
     // try stdout.print("{any}", .{@TypeOf(stdout)}); // *Io.Writer
 
-    try ui.setColor(stdout, .RED, .GREEN);
-    std.debug.print("test", .{});
-
     try ui.clearScreen(stdout);
 
-    try ui.setColor(stdout, .YELLOW, .RED);
-    try ui.moveCursor(stdout, 3, 200);
-    std.debug.print("changed", .{});
-    std.log.info("main", .{});
+    const testCard1 = try card.Card.init(.RED, .{ .NUMBER = 7 });
+    const testCard2 = try card.Card.init(.BLUE, .SKIP);
+    const testCard3 = try card.Card.init(.WILDCOLOR, .WILD4);
+
+    try ui.renderCard(stdout, testCard1, 10, 10);
+    try ui.renderCard(stdout, testCard2, 10, 15);
+    try ui.renderCard(stdout, testCard3, 10, 20);
 
     try stdout.flush();
 }
