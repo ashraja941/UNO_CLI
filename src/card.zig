@@ -1,13 +1,14 @@
 const std = @import("std");
 const expect = std.testing.expect;
 const expectError = std.testing.expectError;
+const log = std.log.scoped(.cards);
 
 pub const InitializationError = error{
     InvalidNumber,
     InvalidColor,
 };
 
-const CardColor = enum { RED, BLUE, GREEN, YELLOW, WILDCOLOR };
+pub const CardColor = enum { RED, BLUE, GREEN, YELLOW, WILDCOLOR };
 
 const CardType = union(enum) {
     NUMBER: u4,
@@ -25,13 +26,16 @@ const Card = struct {
     pub fn init(color: CardColor, value: CardType) InitializationError!Card {
         switch (value) {
             .NUMBER => |n| {
+                log.err("The number of the card should be under 12 and shouldn't have wild color", .{});
                 if (n > 12) return InitializationError.InvalidNumber;
                 if (color == .WILDCOLOR) return InitializationError.InvalidColor;
             },
             .SKIP, .REVERSE, .DRAW2 => {
+                log.err("The SKIP, REVERSE and DRAW2 card shouldn't have wild color", .{});
                 if (color == .WILDCOLOR) return InitializationError.InvalidColor;
             },
             .WILD, .WILD4 => {
+                log.err("WILD Cards should have the WILD COLOR", .{});
                 if (color != .WILDCOLOR) return InitializationError.InvalidColor;
             }
         }
