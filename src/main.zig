@@ -17,13 +17,13 @@ pub fn main() !void {
 
     // try stdout.print("{any}", .{@TypeOf(stdout)}); // *Io.Writer
 
-    try ui.setColor(stdout, .RED);
+    try ui.setColor(stdout, .RED, .GREEN);
     std.debug.print("test", .{});
 
     try ui.clearScreen(stdout);
 
-    try ui.setColor(stdout, .YELLOW);
-    try ui.moveCursor(stdout, 3, 5);
+    try ui.setColor(stdout, .YELLOW, .RED);
+    try ui.moveCursor(stdout, 3, 200);
     std.debug.print("changed", .{});
     std.log.info("main", .{});
 

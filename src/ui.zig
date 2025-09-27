@@ -2,7 +2,7 @@ const std = @import("std");
 const log = std.log.scoped(.ui);
 const cardColor = @import("card.zig").cardColor;
 
-const uiColor = enum { RED, BLUE, GREEN, YELLOW, ORANGE, WHITE };
+const uiColor = enum { RED, BLUE, GREEN, YELLOW, ORANGE, WHITE, RESET };
 
 const Ansi = struct {
     pub const reset = "\x1B[0m";
@@ -20,6 +20,7 @@ fn fgColor(code: uiColor) []const u8 {
         .BLUE => "\x1B[34m",
         .WHITE => "\x1B[37m",
         .ORANGE => "\x1B[38;5;208m",
+        .RESET => "\x1B[39m",
     };
 }
 
@@ -31,6 +32,7 @@ pub fn bgColor(code: uiColor) []const u8 {
         .BLUE => "\x1B[44m",
         .WHITE => "\x1B[47m",
         .ORANGE => "\x1B[48;5;208m",
+        .RESET => "\x1B[49m",
     };
 }
 
@@ -45,15 +47,29 @@ pub fn CardToUiColor(code: cardColor) uiColor {
 }
 
 pub fn clearScreen(writer: *std.Io.Writer) !void {
+    //Clear the colors otherwise the previous background color will cover the screen
+    try setColor(writer, null, null);
     try writer.print("{s}{s}", .{ Ansi.clearScreen, Ansi.cursorHome });
     try writer.flush();
 }
 
-pub fn setColor(writer: *std.Io.Writer, color: uiColor) !void {
-    try writer.print("{s}", .{fgColor(color)});
+pub fn setColor(writer: *std.Io.Writer, fg: ?uiColor, bg: ?uiColor) !void {
+    if (fg) |f| {
+        try writer.print("{s}", .{fgColor(f)});
+    } else {
+        try writer.print("{s}", .{fgColor(.RESET)});
+    }
+
+    if (bg) |b| {
+        try writer.print("{s}", .{bgColor(b)});
+    } else {
+        try writer.print("{s}", .{bgColor(.RESET)});
+    }
+
     try writer.flush();
 }
 
+// TODO: add a check for out of bounds
 pub fn moveCursor(writer: *std.Io.Writer, row: usize, col: usize) !void {
     try writer.print("\x1B[{d};{d}H", .{ row, col });
     try writer.flush();
