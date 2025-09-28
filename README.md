@@ -1,4 +1,4 @@
-# Recreate
+# UNO on the Command Line
 
 A command-line card game built with Zig, inspired by the classic game UNO.
 
