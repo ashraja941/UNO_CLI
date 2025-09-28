@@ -2,6 +2,8 @@ const std = @import("std");
 const ui = @import("ui.zig");
 const Player = @import("player.zig").Player;
 const Card = @import("card.zig").Card;
+const CardType = @import("card.zig").CardType;
+const CardColor = @import("card.zig").CardColor;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
@@ -19,6 +21,50 @@ const aiNames = [_][]const u8{
     "Sway",
     "Asahino",
 };
+
+const CardWeight = struct {
+    kind: CardType,
+    weight: u4,
+};
+
+const weights = [_]CardWeight{
+    .{ .kind = .{ .NUMBER = 0 }, .weight = 10 },
+    .{ .kind = .SKIP, .weight = 1 },
+    .{ .kind = .REVERSE, .weight = 1 },
+    .{ .kind = .DRAW2, .weight = 1 },
+    .{ .kind = .WILD, .weight = 1 },
+    .{ .kind = .WILD4, .weight = 1 },
+};
+
+fn weightedChoice(rand: std.Random, table: []const CardWeight) CardType {
+    var total: u8 = 0;
+    for (table) |entry| {
+        total += entry.weight;
+    }
+
+    const roll = rand.uintLessThan(u8, total);
+
+    var cumilative: usize = 0;
+    for (table) |entry| {
+        cumilative += entry.weight;
+        if (roll < cumilative) return entry.kind;
+    }
+    unreachable;
+}
+
+fn randomCard(rand: std.Random) !Card {
+    const kind = weightedChoice(rand, &weights);
+
+    const color: CardColor = switch (kind) {
+        .WILD, .WILD4 => .WILDCOLOR,
+        else => rand.enumValue(CardColor),
+    };
+
+    return switch (kind) {
+        .NUMBER => try Card.init(color, .{ .NUMBER = rand.intRangeLessThan(u4, 0, 10) }),
+        else => try Card.init(color, kind)
+    };
+}
 
 pub const GameState = struct {
     players: ArrayList(Player),
@@ -96,4 +142,22 @@ test "memory leak" {
     defer game.deinit(allocator);
 
     try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
+}
+
+test "random choice" {
+    var rng = std.Random.DefaultPrng.init(2);
+    const rand = rng.random();
+    std.debug.print("random choice: {any}\n", .{weightedChoice(rand, &weights)});
+}
+
+test "random Card" {
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
+    const card = randomCard(rand);
+
+    std.debug.print("random card: {any}\n", .{card});
 }
