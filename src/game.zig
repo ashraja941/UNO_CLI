@@ -1,20 +1,22 @@
 const std = @import("std");
 const Player = @import("player.zig").Player;
-const ArrayList = std.ArrayList;
 const Card = @import("card.zig").Card;
 const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayList;
 
 const GameDirection = enum { FORWARD, BACKWARD };
 
 const aiNames = [_][]const u8{
-    "HAL9000",
-    "Skynet",
-    "Cortana",
-    "DeepBlue",
-    "RoboBob",
-    "GLaDOS",
-    "T-800",
-    "Marvin",
+    "Alice",
+    "Alex",
+    "Ashwin",
+    "Andrea",
+    "Andrew",
+    "Augustine",
+    "Aarya",
+    "Amy",
+    "Sway",
+    "Asahino",
 };
 
 pub const GameState = struct {
@@ -33,7 +35,6 @@ pub const GameState = struct {
         };
     }
 
-    // TODO: deallocate all the memory
     pub fn deinit(self: *GameState, allocator: Allocator) void {
         for (self.players.items) |*p| {
             p.deinit(allocator);
@@ -70,7 +71,7 @@ pub const GameState = struct {
         }
 
         for (0..(numAi)) |i| {
-            // Choose random names from a list
+            // TODO: Choose random names from a list
             const nameLine = aiNames[i];
             const owned = try allocator.alloc(u8, nameLine.len);
             std.mem.copyForwards(u8, owned, nameLine);
