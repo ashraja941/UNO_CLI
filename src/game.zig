@@ -1,4 +1,5 @@
 const std = @import("std");
+const ui = @import("ui.zig");
 const Player = @import("player.zig").Player;
 const Card = @import("card.zig").Card;
 const Allocator = std.mem.Allocator;
