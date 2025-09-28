@@ -6,7 +6,7 @@ const expect = std.testing.expect;
 
 const PlayerType = enum { HUMAN, AI };
 
-const Player = struct {
+pub const Player = struct {
     name: []const u8,
     hand: ArrayList(Card),
     playerType: PlayerType,
