@@ -37,4 +37,12 @@ test "fields all assigned" {
 
     try expect(player1.playerType == .HUMAN);
     try expect(std.mem.eql(u8, player1.name, "Ash"));
+
+    try player1.hand.append(gpa, try Card.init(.BLUE, .{ .NUMBER = 3 }));
+    try player1.hand.append(gpa, try Card.init(.WILDCOLOR, .WILD));
+    try player1.hand.append(gpa, try Card.init(.YELLOW, .SKIP));
+
+    for (player1.hand.items) |c| {
+        std.debug.print("Card : {any},{any}\n", .{ c.value, c.color });
+    }
 }
