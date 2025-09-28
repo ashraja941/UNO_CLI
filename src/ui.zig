@@ -76,8 +76,13 @@ pub fn homeCursor(writer: *std.Io.Writer) !void {
     try writer.flush();
 }
 
+pub fn moveCursor(writer: *std.Io.Writer, row: usize, col: usize) !void {
+    try writer.print("\x1B[{d};{d}H", .{ row, col });
+    try writer.flush();
+}
+
 // TODO: add a check for out of bounds
-pub fn moveCursor(writer: *std.Io.Writer, comptime text: []const u8, args: anytype, row: usize, col: usize) !void {
+pub fn placeTextAt(writer: *std.Io.Writer, comptime text: []const u8, args: anytype, row: usize, col: usize) !void {
     try writer.print("\x1B[{d};{d}H", .{ row, col });
     try writer.print(text, args);
     try writer.flush();
@@ -107,11 +112,11 @@ pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !v
     };
     const spaces = " ";
 
-    try moveCursor(writer, "┌───┐\n", .{}, row, col);
-    try moveCursor(writer, "│   │\n", .{}, row + 1, col);
-    try moveCursor(writer, "│{s}{s}{s}│\n", .{ spaces[0..padding], value, " " }, row + 2, col);
-    try moveCursor(writer, "│   │\n", .{}, row + 3, col);
-    try moveCursor(writer, "└───┘\n", .{}, row + 4, col);
+    try placeTextAt(writer, "┌───┐\n", .{}, row, col);
+    try placeTextAt(writer, "│   │\n", .{}, row + 1, col);
+    try placeTextAt(writer, "│{s}{s}{s}│\n", .{ spaces[0..padding], value, " " }, row + 2, col);
+    try placeTextAt(writer, "│   │\n", .{}, row + 3, col);
+    try placeTextAt(writer, "└───┘\n", .{}, row + 4, col);
 
     try setColor(writer, null, null);
     try homeCursor(writer);
