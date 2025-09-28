@@ -29,12 +29,17 @@ pub const GameState = struct {
             .gameDirection = .FORWARD,
             .turn = 0,
             // TODO: Create random first card
-            .topCard = try Card.init(.BLUE, .{ .NUMBER = 1 })
+            .topCard = try Card.init(.WILDCOLOR, .WILD)
         };
     }
 
     // TODO: deallocate all the memory
-    // pub fn deinit(allocator: Allocator) void {}
+    pub fn deinit(self: *GameState, allocator: Allocator) void {
+        for (self.players.items) |*p| {
+            p.deinit(allocator);
+        }
+        self.players.deinit(allocator);
+    }
 
     pub fn getPlayers(self: *GameState, allocator: Allocator, reader: *std.Io.Reader, writer: *std.Io.Writer) !void {
         try writer.print("Enter the number of Human Players : ", .{});
@@ -82,3 +87,11 @@ pub const GameState = struct {
         }
     }
 };
+
+test "memory leak" {
+    const allocator = std.testing.allocator;
+    var game = try GameState.init(allocator);
+    defer game.deinit(allocator);
+
+    try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
+}
