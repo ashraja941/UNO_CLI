@@ -22,7 +22,7 @@ pub fn main() !void {
 
     const testCard1 = try card.Card.init(.RED, .{ .NUMBER = 7 });
     const testCard2 = try card.Card.init(.BLUE, .SKIP);
-    const testCard3 = try card.Card.init(.WILDCOLOR, .WILD4);
+    const testCard3 = try card.Card.init(.YELLOW, .{ .NUMBER = 0 });
 
     try ui.renderCard(stdout, testCard1, 10, 10);
     try ui.renderCard(stdout, testCard2, 10, 15);
