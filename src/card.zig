@@ -26,7 +26,7 @@ pub const Card = struct {
     pub fn init(color: CardColor, value: CardType) InitializationError!Card {
         switch (value) {
             .NUMBER => |n| {
-                if (n > 12) return InitializationError.InvalidNumber;
+                if (n > 9) return InitializationError.InvalidNumber;
                 if (color == .WILDCOLOR) return InitializationError.InvalidColor;
             },
             .SKIP, .REVERSE, .DRAW2 => {
@@ -65,7 +65,7 @@ test "Create Card" {
 
 test "create faulty card" {
     try expectError(InitializationError.InvalidNumber, Card.init(.BLUE, .{ .NUMBER = 13 }));
-    try expectError(InitializationError.InvalidColor, Card.init(.WILDCOLOR, .{ .NUMBER = 10 }));
+    try expectError(InitializationError.InvalidColor, Card.init(.WILDCOLOR, .{ .NUMBER = 9 }));
     try expectError(InitializationError.InvalidColor, Card.init(.WILDCOLOR, .SKIP));
     try expectError(InitializationError.InvalidColor, Card.init(.BLUE, .WILD));
 }
