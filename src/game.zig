@@ -139,11 +139,25 @@ pub const GameState = struct {
             try writer.print("player info : {s}\n", .{p.name});
         }
     }
+
+    pub fn printGameStates(self: GameState) void {
+        std.debug.print("Current state: \ndirection : {any}\nTop Card : {any}, Turn : {any}, \nPlayers : {any}\n", .{ self.gameDirection, self.topCard, self.turn, self.players });
+    }
+
+    pub fn changeTopCard(self: *GameState, card: Card) void {
+        self.topCard = card;
+    }
 };
 
 test "memory leak" {
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
     const allocator = std.testing.allocator;
-    var game = try GameState.init(allocator);
+    var game = try GameState.init(allocator, rand);
     defer game.deinit(allocator);
 
     try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
@@ -179,4 +193,19 @@ test "test 1000 times" {
         _ = card;
     }
     // std.debug.print("Passed 100000 times", .{});
+}
+
+test "print" {
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
+    const allocator = std.testing.allocator;
+    var game = try GameState.init(allocator, rand);
+    defer game.deinit(allocator);
+
+    try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
+    game.printGameStates();
 }

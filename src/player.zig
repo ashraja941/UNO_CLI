@@ -42,7 +42,7 @@ test "fields all assigned" {
     try player1.hand.append(gpa, try Card.init(.WILDCOLOR, .WILD));
     try player1.hand.append(gpa, try Card.init(.YELLOW, .SKIP));
 
-    for (player1.hand.items) |c| {
-        std.debug.print("Card : {any},{any}\n", .{ c.value, c.color });
-    }
+    // for (player1.hand.items) |c| {
+    //     std.debug.print("Card : {any},{any}\n", .{ c.value, c.color });
+    // }
 }
