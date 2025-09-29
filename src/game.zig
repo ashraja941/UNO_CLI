@@ -78,13 +78,12 @@ pub const GameState = struct {
     turn: usize,
     topCard: Card,
 
-    pub fn init(allocator: Allocator) !GameState {
+    pub fn init(allocator: Allocator, rand: std.Random) !GameState {
         return .{
             .players = try ArrayList(Player).initCapacity(allocator, 4),
             .gameDirection = .FORWARD,
             .turn = 0,
-            // TODO: Create random first card
-            .topCard = try Card.init(.WILDCOLOR, .WILD)
+            .topCard = try randomCard(rand),
         };
     }
 
