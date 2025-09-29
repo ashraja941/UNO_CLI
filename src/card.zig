@@ -32,9 +32,7 @@ pub const Card = struct {
             .SKIP, .REVERSE, .DRAW2 => {
                 if (color == .WILDCOLOR) return InitializationError.InvalidColor;
             },
-            .WILD, .WILD4 => {
-                if (color != .WILDCOLOR) return InitializationError.InvalidColor;
-            }
+            .WILD, .WILD4 => {}
         }
 
         return Card{
@@ -67,5 +65,5 @@ test "create faulty card" {
     try expectError(InitializationError.InvalidNumber, Card.init(.BLUE, .{ .NUMBER = 13 }));
     try expectError(InitializationError.InvalidColor, Card.init(.WILDCOLOR, .{ .NUMBER = 9 }));
     try expectError(InitializationError.InvalidColor, Card.init(.WILDCOLOR, .SKIP));
-    try expectError(InitializationError.InvalidColor, Card.init(.BLUE, .WILD));
+    // try expectError(InitializationError.InvalidColor, Card.init(.BLUE, .WILD));
 }
