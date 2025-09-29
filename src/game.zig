@@ -73,6 +73,16 @@ fn randomCard(rand: std.Random) !Card {
     };
 }
 
+fn validPlay(card1: Card, card2: Card) bool {
+    if ((card1.color == card2.color) or (card1.color == .WILDCOLOR) or (card2.color == .WILDCOLOR)) return true;
+    if (@intFromEnum(card1.value) != @intFromEnum(card2.value)) return false;
+
+    return switch (card1.value) {
+        .NUMBER => |an| card2.value.NUMBER == an,
+        else => true
+    };
+}
+
 pub const GameState = struct {
     players: ArrayList(Player),
     gameDirection: GameDirection,
@@ -298,4 +308,42 @@ test "removeCardFromPlayer removes the correct card" {
         .SKIP => true,
         else => false,
     });
+}
+
+test "validPlay same color different number" {
+    const c1 = try Card.init(.RED, .{ .NUMBER = 5 });
+    const c2 = try Card.init(.RED, .{ .NUMBER = 7 });
+    try expect(validPlay(c1, c2));
+}
+
+test "validPlay same number different color" {
+    const c1 = try Card.init(.RED, .{ .NUMBER = 5 });
+    const c2 = try Card.init(.BLUE, .{ .NUMBER = 5 });
+    try expect(validPlay(c1, c2));
+}
+
+test "validPlay different number and color but same action" {
+    const c1 = try Card.init(.RED, .SKIP);
+    const c2 = try Card.init(.BLUE, .SKIP);
+    try expect(validPlay(c1, c2));
+}
+
+test "validPlay wild card is always valid" {
+    const wild = try Card.init(.WILDCOLOR, .WILD);
+    const c = try Card.init(.GREEN, .{ .NUMBER = 3 });
+    try expect(validPlay(wild, c));
+    try expect(validPlay(c, wild));
+}
+
+test "validPlay wild draw four is always valid" {
+    const wild4 = try Card.init(.WILDCOLOR, .WILD4);
+    const c = try Card.init(.YELLOW, .DRAW2);
+    try expect(validPlay(wild4, c));
+    try expect(validPlay(c, wild4));
+}
+
+test "validPlay fails on mismatch" {
+    const c1 = try Card.init(.RED, .{ .NUMBER = 3 });
+    const c2 = try Card.init(.BLUE, .{ .NUMBER = 7 });
+    try expect(!validPlay(c1, c2));
 }
