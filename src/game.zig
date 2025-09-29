@@ -175,6 +175,24 @@ pub const GameState = struct {
         const removed = self.players.items[playerIndex].hand.orderedRemove(cardIndex);
         _ = removed;
     }
+
+    pub fn playCard(self: *GameState, playerIndex: usize, cardIndex: usize) bool {
+        const card = self.players.items[playerIndex].hand.items[cardIndex];
+
+        if (validPlay(self.topCard, card)) {
+            self.topCard = card;
+            try self.removeCardFromPlayer(playerIndex, cardIndex);
+            return true;
+        }
+        return false;
+    }
+
+    pub fn drawCard(self: GameState, rand: std.Random, playerIndex: usize, num: usize) !void {
+        for (0..num) |_| {
+            const card = try randomCard(rand);
+            try self.addCardToPlayer(Allocator, playerIndex, card);
+        }
+    }
 };
 
 test "memory leak" {
