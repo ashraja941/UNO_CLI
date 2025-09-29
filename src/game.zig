@@ -148,6 +148,15 @@ pub const GameState = struct {
     pub fn changeTopCard(self: *GameState, card: Card) void {
         self.topCard = card;
     }
+
+    pub fn addCardToPlayer(self: *GameState, allocator: Allocator, playerIndex: usize, card: Card) !void {
+        try self.players.items[playerIndex].hand.append(allocator, card);
+    }
+
+    pub fn removeCardFromPlayer(self: *GameState, playerIndex: usize, cardIndex: usize) !void {
+        const removed = self.players.items[playerIndex].hand.orderedRemove(cardIndex);
+        _ = removed;
+    }
 };
 
 test "memory leak" {
@@ -234,4 +243,59 @@ test "changed top card" {
         else => true,
     });
     try expect(card.color == topCard.color);
+}
+
+test "addCardToPlayer adds a card to the player's hand" {
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
+    const allocator = std.testing.allocator;
+    var game = try GameState.init(allocator, rand);
+    defer game.deinit(allocator);
+
+    try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
+
+    const card = try Card.init(.RED, .{ .NUMBER = 5 });
+    try game.addCardToPlayer(allocator, 0, card);
+
+    try expect(game.players.items[0].hand.items.len == 1);
+    try expect(game.players.items[0].hand.items[0].color == .RED);
+    try expect(switch (game.players.items[0].hand.items[0].value) {
+        .NUMBER => |n| n == 5,
+        else => false,
+    });
+}
+
+test "removeCardFromPlayer removes the correct card" {
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
+    const allocator = std.testing.allocator;
+    var game = try GameState.init(allocator, rand);
+    defer game.deinit(allocator);
+
+    try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
+
+    const card1 = try Card.init(.GREEN, .{ .NUMBER = 7 });
+    const card2 = try Card.init(.BLUE, .SKIP);
+    try game.addCardToPlayer(allocator, 0, card1);
+    try game.addCardToPlayer(allocator, 0, card2);
+
+    try expect(game.players.items[0].hand.items.len == 2);
+
+    // Remove index 0 → card1 should be gone, card2 should shift to index 0
+    try game.removeCardFromPlayer(0, 0);
+
+    try expect(game.players.items[0].hand.items.len == 1);
+    try expect(game.players.items[0].hand.items[0].color == .BLUE);
+    try expect(switch (game.players.items[0].hand.items[0].value) {
+        .SKIP => true,
+        else => false,
+    });
 }
