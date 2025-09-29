@@ -6,6 +6,7 @@ const CardType = @import("card.zig").CardType;
 const CardColor = @import("card.zig").CardColor;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
+const expect = std.testing.expect;
 
 const GameDirection = enum { FORWARD, BACKWARD };
 
@@ -208,4 +209,29 @@ test "print" {
 
     try game.players.append(allocator, try Player.init(allocator, "Ash", .HUMAN));
     game.printGameStates();
+}
+
+test "changed top card" {
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
+    const allocator = std.testing.allocator;
+    var game = try GameState.init(allocator, rand);
+    defer game.deinit(allocator);
+
+    const card = try Card.init(.GREEN, .SKIP);
+    game.changeTopCard(card);
+    const topCard = game.topCard;
+
+    try expect(switch (card.value) {
+        .NUMBER => |an| switch (topCard.value) {
+            .NUMBER => |bn| an == bn,
+            else => unreachable,
+        },
+        .SKIP, .REVERSE, .DRAW2, .WILD, .WILD4 => true,
+    });
+    try expect(card.color == topCard.color);
 }
