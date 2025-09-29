@@ -122,3 +122,24 @@ pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !v
     try homeCursor(writer);
     try writer.flush();
 }
+
+pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
+    const row = 20;
+    const col = 80;
+    try clearScreen(writer);
+
+    try placeTextAt(writer, "██    ██  ██    ██   ██████ ", .{}, row, col);
+    try placeTextAt(writer, "██    ██  ███   ██  ██    ██", .{}, row + 1, col);
+    try placeTextAt(writer, "██    ██  ██ █  ██  ██    ██", .{}, row + 2, col);
+    try placeTextAt(writer, "██    ██  ██  █ ██  ██    ██", .{}, row + 3, col);
+    try placeTextAt(writer, "██    ██  ██   ███  ██    ██", .{}, row + 4, col);
+    try placeTextAt(writer, "██    ██  ██    ██  ██    ██", .{}, row + 5, col);
+    try placeTextAt(writer, " ██████   ██    ██   ██████ ", .{}, row + 6, col);
+
+    try placeTextAt(writer, "ON THE COMMAND LINE", .{}, row + 7, col + 5);
+    try placeTextAt(writer, "Press ENTER to continue", .{}, row + 9, col + 3);
+
+    try moveCursor(writer, 100, 900);
+    const waitInput = try reader.takeDelimiterExclusive('\n');
+    _ = waitInput;
+}

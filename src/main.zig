@@ -7,27 +7,6 @@ const game = @import("game.zig");
 pub const std_options = @import("logger.zig").options;
 const WinKernel = std.os.windows.kernel32;
 
-pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
-    const row = 20;
-    const col = 80;
-    try ui.clearScreen(writer);
-
-    try ui.placeTextAt(writer, "██    ██  ██    ██   ██████ ", .{}, row, col);
-    try ui.placeTextAt(writer, "██    ██  ███   ██  ██    ██", .{}, row + 1, col);
-    try ui.placeTextAt(writer, "██    ██  ██ █  ██  ██    ██", .{}, row + 2, col);
-    try ui.placeTextAt(writer, "██    ██  ██  █ ██  ██    ██", .{}, row + 3, col);
-    try ui.placeTextAt(writer, "██    ██  ██   ███  ██    ██", .{}, row + 4, col);
-    try ui.placeTextAt(writer, "██    ██  ██    ██  ██    ██", .{}, row + 5, col);
-    try ui.placeTextAt(writer, " ██████   ██    ██   ██████ ", .{}, row + 6, col);
-
-    try ui.placeTextAt(writer, "ON THE COMMAND LINE", .{}, row + 7, col + 5);
-    try ui.placeTextAt(writer, "Press ENTER to continue", .{}, row + 9, col + 3);
-
-    try ui.moveCursor(writer, 100, 900);
-    const waitInput = try reader.takeDelimiterExclusive('\n');
-    _ = waitInput;
-}
-
 pub fn main() !void {
     // set windows to use UTF-8 Characters
     if (builtin.os.tag == .windows) {
@@ -49,7 +28,7 @@ pub fn main() !void {
     const rand = rng.random();
 
     // Start the Game
-    // try startScreen(stdout, stdin);
+    // try ui.startScreen(stdout, stdin);
     try ui.clearScreen(stdout);
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
