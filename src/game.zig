@@ -57,7 +57,13 @@ fn randomCard(rand: std.Random) !Card {
 
     const color: CardColor = switch (kind) {
         .WILD, .WILD4 => .WILDCOLOR,
-        else => rand.enumValue(CardColor),
+        else => col: {
+            while (true) {
+                const currentColor = rand.enumValue(CardColor);
+                if (currentColor != .WILDCOLOR)
+                    break :col currentColor;
+            }
+        }
     };
 
     return switch (kind) {
@@ -157,7 +163,21 @@ test "random Card" {
     var rng = std.Random.DefaultPrng.init(seed);
     const rand = rng.random();
 
-    const card = randomCard(rand);
+    const card = try randomCard(rand);
 
     std.debug.print("random card: {any}\n", .{card});
+}
+
+test "test 1000 times" {
+    for (0..100000) |_| {
+        const time: i128 = std.time.nanoTimestamp();
+        const bitTime: u128 = @bitCast(time);
+        const seed: u64 = @truncate(bitTime);
+        var rng = std.Random.DefaultPrng.init(seed);
+
+        const rand = rng.random();
+        const card = try randomCard(rand);
+        _ = card;
+    }
+    // std.debug.print("Passed 100000 times", .{});
 }
