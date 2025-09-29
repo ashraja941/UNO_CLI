@@ -231,7 +231,7 @@ test "changed top card" {
             .NUMBER => |bn| an == bn,
             else => unreachable,
         },
-        .SKIP, .REVERSE, .DRAW2, .WILD, .WILD4 => true,
+        else => true,
     });
     try expect(card.color == topCard.color);
 }
