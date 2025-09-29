@@ -105,7 +105,7 @@ pub const GameState = struct {
         self.players.deinit(allocator);
     }
 
-    pub fn getPlayers(self: *GameState, allocator: Allocator, reader: *std.Io.Reader, writer: *std.Io.Writer) !void {
+    pub fn initPlayers(self: *GameState, allocator: Allocator, rand: std.Random, reader: *std.Io.Reader, writer: *std.Io.Writer) !void {
         try writer.print("Enter the number of Human Players : ", .{});
         try writer.flush();
         const humanLine = try reader.takeDelimiterExclusive('\n');
@@ -142,7 +142,11 @@ pub const GameState = struct {
         }
 
         for (names.items) |n| {
-            const player = try Player.init(allocator, n, .HUMAN);
+            var player = try Player.init(allocator, n, .HUMAN);
+            for (0..7) |_| {
+                const card = try randomCard(rand);
+                player.hand.append(allocator, card);
+            }
             try self.players.append(allocator, player);
         }
 
@@ -152,7 +156,10 @@ pub const GameState = struct {
     }
 
     pub fn printGameStates(self: GameState) void {
-        std.debug.print("Current state: \ndirection : {any}\nTop Card : {any}, Turn : {any}, \nPlayers : {any}\n", .{ self.gameDirection, self.topCard, self.turn, self.players });
+        std.debug.print("Current state: \ndirection : {any}\nTop Card : {any}, Turn : {any}, \n", .{ self.gameDirection, self.topCard, self.turn });
+        for (self.players.items) |p| {
+            std.debug.print("{any}\n", .{p.hand});
+        }
     }
 
     pub fn changeTopCard(self: *GameState, card: Card) void {

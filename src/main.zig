@@ -50,7 +50,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     var gamestate = try game.GameState.init(allocator);
-    try gamestate.getPlayers(allocator, stdin, stdout);
+    try gamestate.initPlayers(allocator, stdin, stdout);
 
     const testCard1 = try card.Card.init(.RED, .{ .NUMBER = 7 });
     const testCard2 = try card.Card.init(.BLUE, .SKIP);
