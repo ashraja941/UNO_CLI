@@ -42,6 +42,12 @@ pub fn main() !void {
     var getStdIn = std.fs.File.stdin().reader(&stdinBuffer);
     const stdin = &getStdIn.interface;
 
+    const time: i128 = std.time.nanoTimestamp();
+    const bitTime: u128 = @bitCast(time);
+    const seed: u64 = @truncate(bitTime);
+    var rng = std.Random.DefaultPrng.init(seed);
+    const rand = rng.random();
+
     // Start the Game
     // try startScreen(stdout, stdin);
     try ui.clearScreen(stdout);
@@ -49,8 +55,8 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    var gamestate = try game.GameState.init(allocator);
-    try gamestate.initPlayers(allocator, stdin, stdout);
+    var gamestate = try game.GameState.init(allocator, rand);
+    try gamestate.initPlayers(allocator, rand, stdin, stdout);
 
     const testCard1 = try card.Card.init(.RED, .{ .NUMBER = 7 });
     const testCard2 = try card.Card.init(.BLUE, .SKIP);

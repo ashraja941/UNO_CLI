@@ -145,14 +145,15 @@ pub const GameState = struct {
             var player = try Player.init(allocator, n, .HUMAN);
             for (0..7) |_| {
                 const card = try randomCard(rand);
-                player.hand.append(allocator, card);
+                try player.hand.append(allocator, card);
             }
             try self.players.append(allocator, player);
         }
 
-        for (self.players.items) |p| {
-            try writer.print("player info : {s}\n", .{p.name});
-        }
+        // Print all the values for debugging reasons
+        // for (self.players.items) |p| {
+        //     try writer.print("player info : {s}\t{any}\n", .{ p.name, p.hand });
+        // }
     }
 
     pub fn printGameStates(self: GameState) void {
