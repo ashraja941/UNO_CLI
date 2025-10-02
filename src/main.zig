@@ -44,16 +44,25 @@ pub fn main() !void {
         try ui.moveCursor(stdout, 50, 5);
         try stdout.flush();
         try ui.setColor(stdout, .WHITE, null);
-        const waitInput = try stdin.takeDelimiterExclusive('\n');
-        const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
-        const input = try std.fmt.parseInt(u8, trimmedInput, 10);
 
         while (true) {
+            const waitInput = try stdin.takeDelimiterExclusive('\n');
+            const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
+            const input = try std.fmt.parseInt(u8, trimmedInput, 10);
             const valid = gamestate.playCard(gamestate.turn, input);
             if (valid) break;
         }
 
-        gamestate.turn += 1;
+        switch (gamestate.gameDirection) {
+            .FORWARD => {
+                gamestate.turn += 1;
+                if (gamestate.turn >= gamestate.numPlayers) gamestate.turn = 0;
+            },
+            .BACKWARD => {
+                gamestate.turn -= 1;
+                if (gamestate.turn <= 0) gamestate.turn = gamestate.numPlayers - 1;
+            },
+        }
     }
 
     try stdout.flush();

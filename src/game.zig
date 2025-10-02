@@ -88,6 +88,7 @@ pub const GameState = struct {
     gameDirection: GameDirection,
     turn: usize,
     topCard: Card,
+    numPlayers: usize,
 
     pub fn init(allocator: Allocator, rand: std.Random) !GameState {
         return .{
@@ -95,6 +96,7 @@ pub const GameState = struct {
             .gameDirection = .FORWARD,
             .turn = 0,
             .topCard = try randomCard(rand),
+            .numPlayers = 0,
         };
     }
 
@@ -140,6 +142,8 @@ pub const GameState = struct {
             std.mem.copyForwards(u8, owned, nameLine);
             try names.append(allocator, owned);
         }
+
+        self.numPlayers = numHumans + numAi;
 
         for (names.items) |n| {
             var player = try Player.init(allocator, n, .HUMAN);
