@@ -3,6 +3,7 @@ const log = std.log.scoped(.ui);
 const cardColor = @import("card.zig").CardColor;
 const cardType = @import("card.zig").CardType;
 const Card = @import("card.zig").Card;
+const GameState = @import("game.zig").GameState;
 
 const uiColor = enum { RED, BLUE, GREEN, YELLOW, ORANGE, WHITE, RESET };
 
@@ -142,4 +143,19 @@ pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
     try moveCursor(writer, 100, 900);
     const waitInput = try reader.takeDelimiterExclusive('\n');
     _ = waitInput;
+}
+
+pub fn gameFrame(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: GameState) !void {
+    _ = reader;
+    try clearScreen(writer);
+    try renderCard(writer, gamestate.topCard, 20, 80);
+
+    for (gamestate.players.items[gamestate.turn].hand.items, 0..) |card, i| {
+        if (i > 10) break;
+        const col = 5 + (6 * i);
+        try renderCard(writer, card, 40, col);
+        try placeTextAt(writer, "{d}", .{i}, 45, col + 2);
+    }
+
+    try homeCursor(writer);
 }

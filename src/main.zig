@@ -27,23 +27,34 @@ pub fn main() !void {
     var rng = std.Random.DefaultPrng.init(seed);
     const rand = rng.random();
 
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
     // Start the Game
     // try ui.startScreen(stdout, stdin);
     try ui.clearScreen(stdout);
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-
     var gamestate = try game.GameState.init(allocator, rand);
     try gamestate.initPlayers(allocator, rand, stdin, stdout);
 
-    const testCard1 = try card.Card.init(.RED, .{ .NUMBER = 7 });
-    const testCard2 = try card.Card.init(.BLUE, .SKIP);
-    const testCard3 = try card.Card.init(.YELLOW, .{ .NUMBER = 0 });
+    // Main Game Loop
+    while (true) {
+        try ui.clearScreen(stdout);
+        try ui.gameFrame(stdout, stdin, gamestate);
+        try ui.moveCursor(stdout, 50, 5);
+        try stdout.flush();
+        try ui.setColor(stdout, .WHITE, null);
+        const waitInput = try stdin.takeDelimiterExclusive('\n');
+        const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
+        const input = try std.fmt.parseInt(u8, trimmedInput, 10);
 
-    try ui.renderCard(stdout, testCard1, 10, 10);
-    try ui.renderCard(stdout, testCard2, 10, 15);
-    try ui.renderCard(stdout, testCard3, 10, 20);
+        while (true) {
+            const valid = gamestate.playCard(gamestate.turn, input);
+            if (valid) break;
+        }
+
+        gamestate.turn += 1;
+    }
 
     try stdout.flush();
 }
