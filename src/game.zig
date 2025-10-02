@@ -181,6 +181,8 @@ pub const GameState = struct {
     }
 
     pub fn playCard(self: *GameState, playerIndex: usize, cardIndex: usize) bool {
+        if (cardIndex >= self.players.items[playerIndex].hand.items.len) return false;
+
         const card = self.players.items[playerIndex].hand.items[cardIndex];
 
         if (validPlay(self.topCard, card)) {
