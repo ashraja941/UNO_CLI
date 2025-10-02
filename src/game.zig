@@ -191,10 +191,10 @@ pub const GameState = struct {
         return false;
     }
 
-    pub fn drawCard(self: GameState, rand: std.Random, playerIndex: usize, num: usize) !void {
+    pub fn drawCard(self: *GameState, allocator: Allocator, rand: std.Random, playerIndex: usize, num: usize) !void {
         for (0..num) |_| {
             const card = try randomCard(rand);
-            try self.addCardToPlayer(Allocator, playerIndex, card);
+            try self.addCardToPlayer(allocator, playerIndex, card);
         }
     }
 };

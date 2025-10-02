@@ -48,7 +48,14 @@ pub fn main() !void {
         while (true) {
             const waitInput = try stdin.takeDelimiterExclusive('\n');
             const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
+
+            if (std.mem.eql(u8, trimmedInput, "d")) {
+                try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
+                break;
+            }
+
             const input = try std.fmt.parseInt(u8, trimmedInput, 10);
+
             const valid = gamestate.playCard(gamestate.turn, input);
             if (valid) break;
         }
