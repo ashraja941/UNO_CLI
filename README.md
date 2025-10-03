@@ -22,8 +22,8 @@ This project is a recreation of the popular card game UNO, implemented in the Zi
 
 1.  **Clone the repository:**
     ```sh
-    git clone <repository-url>
-    cd recreate
+    git clone https://github.com/ashraja941/UNO_CLI.git
+    cd UNO_CLI
     ```
 
 2.  **Build the executable:**
@@ -71,10 +71,9 @@ The first player to get rid of all their cards wins the round. Points are scored
 
 This project is still under development. Here are some of the features and improvements planned for the future:
 
-*   [ ] Implement the main game loop.
-*   [ ] Implement the complete game logic for all card types.
+*   [x] Implement the main game loop.
+*   [x] Implement the complete game logic for all card types.
 *   [ ] Implement AI for computer-controlled players.
 *   [ ] Add a scoring system.
 *   [ ] Improve the user interface and user experience.
 *   [ ] Add more tests to ensure the game is working correctly.
-*   [ ] Fix memory deallocation issues.
