@@ -189,6 +189,9 @@ pub fn gameFrame(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: Game
     // display player name
     try placeTextAt(writer, "{s}", .{gamestate.players.items[gamestate.turn].name}, 10, 20);
 
+    // box around player cards
+    try placeBox(writer, 39, 4, 8, 100);
+
     // display players cards
     for (gamestate.players.items[gamestate.turn].hand.items, 0..) |card, i| {
         if (i > 10) break;
@@ -196,6 +199,9 @@ pub fn gameFrame(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: Game
         try renderCard(writer, card, 40, col);
         try placeTextAt(writer, "{d}", .{i}, 45, col + 2);
     }
+
+    // box around user input
+    try placeBox(writer, 47, 4, 3, 100);
 
     try homeCursor(writer);
 }

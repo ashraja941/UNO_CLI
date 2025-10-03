@@ -88,7 +88,10 @@ pub fn main() !void {
             if (valid) break;
         }
 
-        // TODO: Check for win condition here
+        if (gamestate.players.items[gamestate.turn].hand.items.len == 0) {
+            // TODO: Create win page
+            break;
+        }
 
         // special actions for cards
         switch (gamestate.topCard.value) {
