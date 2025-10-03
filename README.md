@@ -22,8 +22,8 @@ This project is a recreation of the popular card game UNO, implemented in the Zi
 
 1.  **Clone the repository:**
     ```sh
-    git clone <repository-url>
-    cd recreate
+    git clone https://github.com/ashraja941/UNO_CLI.git
+    cd UNO_CLI
     ```
 
 2.  **Build the executable:**
