@@ -95,7 +95,16 @@ pub const GameState = struct {
             .players = try ArrayList(Player).initCapacity(allocator, 4),
             .gameDirection = .FORWARD,
             .turn = 0,
-            .topCard = try randomCard(rand),
+            .topCard = tpc: {
+                const flag: bool = true;
+                while (flag) {
+                    const card = try randomCard(rand);
+                    switch (card.value) {
+                        .WILD4, .WILD => {},
+                        else => break :tpc card
+                    }
+                }
+            },
             .numPlayers = 0,
         };
     }
@@ -108,14 +117,19 @@ pub const GameState = struct {
     }
 
     pub fn initPlayers(self: *GameState, allocator: Allocator, rand: std.Random, reader: *std.Io.Reader, writer: *std.Io.Writer) !void {
-        try writer.print("Enter the number of Human Players : ", .{});
-        try writer.flush();
+        // bounding box
+        try ui.placeBox(writer, 1, 1, 35, 99);
+
+        try ui.placeBox(writer, 2, 2, 3, 50);
+        try ui.placeTextAt(writer, "Enter the number of Human Players : ", .{}, 3, 3);
+        try ui.moveCursor(writer, 3, 40);
         const humanLine = try reader.takeDelimiterExclusive('\n');
         const trimmedHuman = std.mem.trimRight(u8, humanLine, "\r"); // remove the stupid windows \r
         const numHumans = try std.fmt.parseInt(u8, trimmedHuman, 10);
 
-        try writer.print("Enter the number of AI Players    : ", .{});
-        try writer.flush();
+        try ui.placeBox(writer, 5, 2, 3, 50);
+        try ui.placeTextAt(writer, "Enter the number of AI Players    : ", .{}, 6, 3);
+        try ui.moveCursor(writer, 6, 40);
         const aiLine = try reader.takeDelimiterExclusive('\n');
         const trimmedAi = std.mem.trimRight(u8, aiLine, "\r"); // remove the stupid windows \r
         const numAi = try std.fmt.parseInt(u8, trimmedAi, 10);
@@ -126,9 +140,12 @@ pub const GameState = struct {
             names.deinit(allocator);
         }
 
+        try ui.placeBox(writer, 8, 2, 27, 97);
+
         for (0..(numHumans)) |i| {
-            try writer.print("Enter name of player {d} : ", .{i + 1});
-            try writer.flush();
+            try ui.placeTextAt(writer, "Enter name of player {d} : ", .{i + 1}, 9 + i, 3);
+            try ui.moveCursor(writer, 9 + i, 30);
+
             const nameLine = try reader.takeDelimiterExclusive('\n');
             const owned = try allocator.alloc(u8, nameLine.len);
             std.mem.copyForwards(u8, owned, nameLine);

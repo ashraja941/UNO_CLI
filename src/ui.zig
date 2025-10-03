@@ -4,6 +4,8 @@ const cardColor = @import("card.zig").CardColor;
 const cardType = @import("card.zig").CardType;
 const Card = @import("card.zig").Card;
 const GameState = @import("game.zig").GameState;
+const expect = std.testing.expect;
+const Allocator = std.mem.Allocator;
 
 const uiColor = enum { RED, BLUE, GREEN, YELLOW, ORANGE, WHITE, RESET };
 
@@ -107,6 +109,20 @@ pub fn placeBox(writer: *std.Io.Writer, row: usize, col: usize, height: usize, w
     try placeTextAt(writer, "┘\n", .{}, row + height - 1, col + width - 1);
 }
 
+pub fn truncateName(allocator: std.mem.Allocator, name: []const u8) ![]u8 {
+    if (name.len <= 8) {
+        // return a copy of the original name
+        const copy = try allocator.alloc(u8, name.len);
+        std.mem.copyForwards(u8, copy, name);
+        return copy;
+    }
+
+    const truncated = try allocator.alloc(u8, 8);
+    std.mem.copyForwards(u8, truncated[0..5], name[0..5]);
+    std.mem.copyForwards(u8, truncated[5..], "...");
+    return truncated;
+}
+
 pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !void {
     const color = CardToUiColor(card.color);
     try setColor(writer, color, null);
@@ -143,6 +159,9 @@ pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !v
 }
 
 pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
+    // bounding box
+    try placeBox(writer, 1, 1, 35, 99);
+
     const row = 20;
     const col = 80;
     try clearScreen(writer);
@@ -164,12 +183,13 @@ pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
 }
 
 pub fn chooseColorScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !u8 {
-    const row = 20;
-    const col = 30;
+    const row = 14;
+    const col = 37;
 
     try placeBox(writer, row, col, 8, 20);
     try placeTextAt(writer, "  Select a Color  ", .{}, row + 1, col + 1);
     try placeTextAt(writer, " (press a number) ", .{}, row + 2, col + 1);
+    try placeTextAt(writer, "                  ", .{}, row + 3, col + 1);
     try placeTextAt(writer, " 1) YELLOW 2) RED ", .{}, row + 4, col + 1);
     try placeTextAt(writer, " 3) GREEN 4) BLUE ", .{}, row + 5, col + 1);
     try moveCursor(writer, row + 6, col + 1);
@@ -180,28 +200,110 @@ pub fn chooseColorScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !u8 {
     return input;
 }
 
-pub fn gameFrame(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: GameState) !void {
+fn wrapIndex(turn: usize, offset: isize, numPlayers: usize) usize {
+    // convert to signed so we can go negative
+    const raw = @as(isize, @intCast(turn)) + offset;
+
+    // modulo that works with negatives
+    const wrapped = @mod(raw, @as(isize, @intCast(numPlayers)));
+
+    return @intCast(wrapped);
+}
+
+fn displayPlayers(allocator: Allocator, writer: *std.Io.Writer, gamestate: GameState) !void {
+    const index = gamestate.turn;
+    // name 1
+    try placeTextAt(writer, "👤", .{}, 3, 20);
+    const before2 = wrapIndex(index, -2, gamestate.numPlayers);
+    const before2name = try truncateName(allocator, gamestate.players.items[before2].name);
+    defer allocator.free(before2name);
+    const before2offset: usize = (before2name.len) / 2;
+    try placeTextAt(writer, "{s}", .{before2name}, 4, 20 - before2offset);
+
+    // name 2
+    try placeTextAt(writer, "👤", .{}, 3, 32);
+    const before1 = wrapIndex(index, -1, gamestate.numPlayers);
+    const before1name = try truncateName(allocator, gamestate.players.items[before1].name);
+    defer allocator.free(before1name);
+    const before1offset: usize = (before1name.len) / 2;
+    try placeTextAt(writer, "{s}", .{before1name}, 4, 32 - before1offset);
+
+    // name 3
+    try placeTextAt(writer, "🕹️", .{}, 3, 45);
+    try placeTextAt(writer, "You", .{}, 4, 44);
+
+    // name 4
+    try placeTextAt(writer, "👤", .{}, 3, 57);
+    const after1 = wrapIndex(index, 1, gamestate.numPlayers);
+    const after1name = try truncateName(allocator, gamestate.players.items[after1].name);
+    defer allocator.free(after1name);
+    const after1offset: usize = (after1name.len) / 2;
+    try placeTextAt(writer, "{s}", .{after1name}, 4, 57 - after1offset);
+
+    // name 5
+    try placeTextAt(writer, "👤", .{}, 3, 70);
+    const after2 = wrapIndex(index, 2, gamestate.numPlayers);
+    const after2name = try truncateName(allocator, gamestate.players.items[after2].name);
+    defer allocator.free(after2name);
+    const after2offset: usize = (after2name.len) / 2;
+    try placeTextAt(writer, "{s}", .{after2name}, 4, 70 - after2offset);
+    try writer.flush();
+}
+
+pub fn gameFrame(allocator: Allocator, writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: GameState) !void {
     _ = reader;
     try clearScreen(writer);
+
+    // bounding box
+    try placeBox(writer, 1, 1, 35, 99);
+
+    // turn arrow
+    switch (gamestate.gameDirection) {
+        .FORWARD => {
+            try placeTextAt(writer, "─────────────────────────────────────────────────────────────>", .{}, 2, 15);
+        },
+        .BACKWARD => {
+            try placeTextAt(writer, "<─────────────────────────────────────────────────────────────", .{}, 2, 15);
+        }
+    }
+    // display player line
+    try displayPlayers(allocator, writer, gamestate);
+
     // display top card
-    try renderCard(writer, gamestate.topCard, 20, 80);
+    try renderCard(writer, gamestate.topCard, 15, 45);
 
     // display player name
-    try placeTextAt(writer, "{s}", .{gamestate.players.items[gamestate.turn].name}, 10, 20);
+    try placeTextAt(writer, "It's your turn : {s}", .{gamestate.players.items[gamestate.turn].name}, 23, 3);
 
     // box around player cards
-    try placeBox(writer, 39, 4, 8, 100);
+    try placeBox(writer, 24, 3, 8, 95);
+
+    // 2 arrows
+    try placeTextAt(writer, "<", .{}, 25, 4);
+    try placeTextAt(writer, ">", .{}, 25, 96);
 
     // display players cards
     for (gamestate.players.items[gamestate.turn].hand.items, 0..) |card, i| {
-        if (i > 10) break;
-        const col = 5 + (6 * i);
-        try renderCard(writer, card, 40, col);
-        try placeTextAt(writer, "{d}", .{i}, 45, col + 2);
+        if (i > 14) break;
+        const col = 6 + (6 * i);
+        try renderCard(writer, card, 25, col);
+        try placeTextAt(writer, "{d}", .{i}, 30, col + 2);
     }
 
     // box around user input
-    try placeBox(writer, 47, 4, 3, 100);
+    try placeBox(writer, 32, 3, 3, 95);
+    try placeTextAt(writer, "Enter your move : ", .{}, 33, 5);
 
     try homeCursor(writer);
+}
+
+test "truncated name " {
+    const allocator = std.testing.allocator;
+    const name1 = "1234567890";
+    const tName = try truncateName(allocator, name1);
+    defer allocator.free(tName);
+    const expected = "12345...";
+    std.debug.print("{s}\n", .{tName});
+
+    try expect(std.mem.eql(u8, expected, tName));
 }

@@ -68,13 +68,14 @@ pub fn main() !void {
     // Main Game Loop
     while (true) {
         try ui.clearScreen(stdout);
-        try ui.gameFrame(stdout, stdin, gamestate);
-        try ui.moveCursor(stdout, 50, 5);
+        try ui.gameFrame(allocator, stdout, stdin, gamestate);
         try stdout.flush();
         try ui.setColor(stdout, .WHITE, null);
 
         // read input
         while (true) {
+            try ui.placeTextAt(stdout, "                          ", .{}, 33, 23);
+            try ui.moveCursor(stdout, 33, 23);
             const waitInput = try stdin.takeDelimiterExclusive('\n');
             const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
 
@@ -110,12 +111,14 @@ pub fn main() !void {
                 try gamestate.drawCard(allocator, rand, nextPlayer, 2);
             },
             .WILD => {
-                try chooseColor(stdout, stdin, &gamestate);
+                if (gamestate.topCard.color == .WILDCOLOR) try chooseColor(stdout, stdin, &gamestate);
             },
             .WILD4 => {
-                const nextPlayer = nextTurn(&gamestate);
-                try gamestate.drawCard(allocator, rand, nextPlayer, 4);
-                try chooseColor(stdout, stdin, &gamestate);
+                if (gamestate.topCard.color == .WILDCOLOR) {
+                    const nextPlayer = nextTurn(&gamestate);
+                    try gamestate.drawCard(allocator, rand, nextPlayer, 4);
+                    try chooseColor(stdout, stdin, &gamestate);
+                }
             },
         }
 
