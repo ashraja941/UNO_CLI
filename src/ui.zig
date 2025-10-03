@@ -89,6 +89,24 @@ pub fn placeTextAt(writer: *std.Io.Writer, comptime text: []const u8, args: anyt
     try writer.flush();
 }
 
+pub fn placeBox(writer: *std.Io.Writer, row: usize, col: usize, height: usize, width: usize) !void {
+    try placeTextAt(writer, "┌\n", .{}, row, col);
+    try placeTextAt(writer, "┐\n", .{}, row, col + width - 1);
+
+    for (0..width - 2) |i| {
+        try placeTextAt(writer, "─\n", .{}, row, col + i + 1);
+        try placeTextAt(writer, "─\n", .{}, row + height - 1, col + i + 1);
+    }
+
+    for (0..height - 2) |i| {
+        try placeTextAt(writer, "│\n", .{}, row + i + 1, col);
+        try placeTextAt(writer, "│\n", .{}, row + i + 1, col + width - 1);
+    }
+
+    try placeTextAt(writer, "└\n", .{}, row + height - 1, col);
+    try placeTextAt(writer, "┘\n", .{}, row + height - 1, col + width - 1);
+}
+
 pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !void {
     const color = CardToUiColor(card.color);
     try setColor(writer, color, null);
