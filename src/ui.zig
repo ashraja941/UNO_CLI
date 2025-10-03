@@ -148,8 +148,13 @@ pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
 pub fn gameFrame(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: GameState) !void {
     _ = reader;
     try clearScreen(writer);
+    // display top card
     try renderCard(writer, gamestate.topCard, 20, 80);
 
+    // display player name
+    try placeTextAt(writer, "{s}", .{gamestate.players.items[gamestate.turn].name}, 10, 20);
+
+    // display players cards
     for (gamestate.players.items[gamestate.turn].hand.items, 0..) |card, i| {
         if (i > 10) break;
         const col = 5 + (6 * i);

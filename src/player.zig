@@ -12,8 +12,10 @@ pub const Player = struct {
     playerType: PlayerType,
 
     pub fn init(allocator: Allocator, name: []const u8, playerType: PlayerType) !Player {
+        const owned = try allocator.alloc(u8, name.len);
+        std.mem.copyForwards(u8, owned, name);
         return .{
-            .name = name,
+            .name = owned,
             .playerType = playerType,
             .hand = try ArrayList(Card).initCapacity(allocator, 20),
         };
