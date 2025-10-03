@@ -283,7 +283,15 @@ pub fn gameFrame(allocator: Allocator, writer: *std.Io.Writer, reader: *std.Io.R
     try placeTextAt(writer, ">", .{}, 25, 96);
 
     // display players cards
-    for (gamestate.players.items[gamestate.turn].hand.items, 0..) |card, i| {
+    const maxHandNumber = gamestate.players.items[gamestate.turn].hand.items.len / 15;
+    if (gamestate.players.items[gamestate.turn].handNumber > maxHandNumber) {
+        gamestate.players.items[gamestate.turn].handNumber = maxHandNumber;
+    } else if (gamestate.players.items[gamestate.turn].handNumber < 0) {
+        gamestate.players.items[gamestate.turn].handNumber = 0;
+    }
+    const currentHandNumber = gamestate.players.items[gamestate.turn].handNumber;
+
+    for (gamestate.players.items[gamestate.turn].hand.items[(15 * currentHandNumber)..], 0..) |card, i| {
         if (i > 14) break;
         const col = 6 + (6 * i);
         try renderCard(writer, card, 25, col);

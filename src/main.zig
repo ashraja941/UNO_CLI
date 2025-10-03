@@ -72,21 +72,63 @@ pub fn main() !void {
         try stdout.flush();
         try ui.setColor(stdout, .WHITE, null);
 
-        // read input
-        while (true) {
-            try ui.placeTextAt(stdout, "                          ", .{}, 33, 23);
-            try ui.moveCursor(stdout, 33, 23);
-            const waitInput = try stdin.takeDelimiterExclusive('\n');
-            const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
+        switch (gamestate.players.items[gamestate.turn].playerType) {
+            .HUMAN => {
 
-            if (std.mem.eql(u8, trimmedInput, "d")) {
-                try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
-                break;
-            }
+                // read input
+                while (true) {
+                    try ui.placeTextAt(stdout, "                          ", .{}, 33, 23);
+                    try ui.moveCursor(stdout, 33, 23);
+                    const waitInput = try stdin.takeDelimiterExclusive('\n');
+                    const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
 
-            const input = std.fmt.parseInt(u8, trimmedInput, 10) catch 0;
-            const valid = gamestate.playCard(gamestate.turn, input);
-            if (valid) break;
+                    if (std.mem.eql(u8, trimmedInput, "d")) {
+                        try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
+                        break;
+                    }
+
+                    if (std.mem.eql(u8, trimmedInput, ">")) {
+                        gamestate.players.items[gamestate.turn].handNumber += 1;
+
+                        try ui.clearScreen(stdout);
+                        try ui.gameFrame(allocator, stdout, stdin, gamestate);
+                        try stdout.flush();
+                        try ui.setColor(stdout, .WHITE, null);
+
+                        continue;
+                    }
+
+                    if (std.mem.eql(u8, trimmedInput, "<")) {
+                        if (gamestate.players.items[gamestate.turn].handNumber != 0) {
+                            gamestate.players.items[gamestate.turn].handNumber -= 1;
+                        }
+
+                        try ui.clearScreen(stdout);
+                        try ui.gameFrame(allocator, stdout, stdin, gamestate);
+                        try stdout.flush();
+                        try ui.setColor(stdout, .WHITE, null);
+
+                        continue;
+                    }
+                    const input = std.fmt.parseInt(u8, trimmedInput, 10) catch 0;
+                    const valid = gamestate.playCard(gamestate.turn, input);
+                    if (valid) break;
+                }
+            },
+            .AI => {
+                var valid = false;
+                for (gamestate.players.items[gamestate.turn].hand.items, 0..) |currentCard, i| {
+                    if (currentCard.color == .WILDCOLOR) {
+                        gamestate.players.items[gamestate.turn].hand.items[i] = try card.Card.init(@enumFromInt(rand.intRangeAtMost(u8, 0, 4)), currentCard.value);
+                    }
+                    valid = gamestate.playCard(gamestate.turn, i);
+                    if (valid) break;
+                }
+                if (!valid) {
+                    try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
+                }
+                WinKernel.Sleep(1000);
+            },
         }
 
         if (gamestate.players.items[gamestate.turn].hand.items.len == 0) {

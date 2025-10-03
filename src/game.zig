@@ -162,8 +162,14 @@ pub const GameState = struct {
 
         self.numPlayers = numHumans + numAi;
 
-        for (names.items) |n| {
-            var player = try Player.init(allocator, n, .HUMAN);
+        for (names.items, 0..) |n, i| {
+            var player: Player = undefined;
+            if (i < numHumans) {
+                player = try Player.init(allocator, n, .HUMAN);
+            } else {
+                player = try Player.init(allocator, n, .AI);
+            }
+
             for (0..7) |_| {
                 const card = try randomCard(rand);
                 try player.hand.append(allocator, card);
