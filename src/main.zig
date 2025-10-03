@@ -55,6 +55,7 @@ pub fn main() !void {
             }
 
             const input = try std.fmt.parseInt(u8, trimmedInput, 10);
+            const input = std.fmt.parseInt(u8, trimmedInput, 10) catch 0;
 
             const valid = gamestate.playCard(gamestate.turn, input);
             if (valid) break;
