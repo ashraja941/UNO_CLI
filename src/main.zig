@@ -14,8 +14,8 @@ fn nextTurn(gamestate: *game.GameState) usize {
             if (gamestate.turn >= gamestate.numPlayers) gamestate.turn = 0;
         },
         .BACKWARD => {
+            if (gamestate.turn == 0) gamestate.turn = gamestate.numPlayers;
             gamestate.turn -= 1;
-            if (gamestate.turn <= 0) gamestate.turn = gamestate.numPlayers - 1;
         },
     }
     return gamestate.turn;
