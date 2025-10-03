@@ -163,6 +163,23 @@ pub fn startScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
     _ = waitInput;
 }
 
+pub fn chooseColorScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !u8 {
+    const row = 20;
+    const col = 30;
+
+    try placeBox(writer, row, col, 8, 20);
+    try placeTextAt(writer, "  Select a Color  ", .{}, row + 1, col + 1);
+    try placeTextAt(writer, " (press a number) ", .{}, row + 2, col + 1);
+    try placeTextAt(writer, " 1) YELLOW 2) RED ", .{}, row + 4, col + 1);
+    try placeTextAt(writer, " 3) GREEN 4) BLUE ", .{}, row + 5, col + 1);
+    try moveCursor(writer, row + 6, col + 1);
+
+    const cardColorInput = try reader.takeDelimiterExclusive('\n');
+    const trimmedInput = std.mem.trimRight(u8, cardColorInput, "\r");
+    const input = std.fmt.parseInt(u8, trimmedInput, 10) catch 1;
+    return input;
+}
+
 pub fn gameFrame(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: GameState) !void {
     _ = reader;
     try clearScreen(writer);
