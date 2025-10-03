@@ -68,6 +68,8 @@ pub fn main() !void {
     var gamestate = try game.GameState.init(allocator, rand);
     try gamestate.initPlayers(allocator, rand, stdin, stdout);
 
+    var playedAlready: bool = false;
+
     // Main Game Loop
     while (true) {
         try ui.clearScreen(stdout);
@@ -87,6 +89,7 @@ pub fn main() !void {
 
                     if (std.mem.eql(u8, trimmedInput, "d")) {
                         try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
+                        playedAlready = true;
                         break;
                     }
 
@@ -129,6 +132,7 @@ pub fn main() !void {
                 }
                 if (!valid) {
                     try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
+                    playedAlready = true;
                 }
                 WinKernel.Sleep(1000);
             },
@@ -139,34 +143,36 @@ pub fn main() !void {
             break;
         }
 
-        // special actions for cards
-        switch (gamestate.topCard.value) {
-            .NUMBER => {},
-            .REVERSE => {
-                gamestate.gameDirection = switch (gamestate.gameDirection) {
-                    .BACKWARD => .FORWARD,
-                    .FORWARD => .BACKWARD,
-                };
-            },
-            .SKIP => {
-                _ = nextTurn(&gamestate);
-            },
-            .DRAW2 => {
-                const nextPlayer = nextTurn(&gamestate);
-                try gamestate.drawCard(allocator, rand, nextPlayer, 2);
-            },
-            .WILD => {
-                if (gamestate.topCard.color == .WILDCOLOR) try chooseColor(stdout, stdin, &gamestate);
-            },
-            .WILD4 => {
-                if (gamestate.topCard.color == .WILDCOLOR) {
-                    const nextPlayer = nextTurn(&gamestate);
-                    try gamestate.drawCard(allocator, rand, nextPlayer, 4);
-                    try chooseColor(stdout, stdin, &gamestate);
-                }
-            },
-        }
+        if (!playedAlready) {
 
+            // special actions for cards
+            switch (gamestate.topCard.value) {
+                .NUMBER => {},
+                .REVERSE => {
+                    gamestate.gameDirection = switch (gamestate.gameDirection) {
+                        .BACKWARD => .FORWARD,
+                        .FORWARD => .BACKWARD,
+                    };
+                },
+                .SKIP => {
+                    _ = nextTurn(&gamestate);
+                },
+                .DRAW2 => {
+                    const nextPlayer = nextTurn(&gamestate);
+                    try gamestate.drawCard(allocator, rand, nextPlayer, 2);
+                },
+                .WILD => {
+                    if (gamestate.topCard.color == .WILDCOLOR) try chooseColor(stdout, stdin, &gamestate);
+                },
+                .WILD4 => {
+                    if (gamestate.topCard.color == .WILDCOLOR) {
+                        const nextPlayer = nextTurn(&gamestate);
+                        try gamestate.drawCard(allocator, rand, nextPlayer, 4);
+                        try chooseColor(stdout, stdin, &gamestate);
+                    }
+                },
+            }
+        }
         _ = nextTurn(&gamestate);
     }
 
