@@ -7,6 +7,34 @@ const game = @import("game.zig");
 pub const std_options = @import("logger.zig").options;
 const WinKernel = std.os.windows.kernel32;
 
+fn nextTurn(gamestate: *game.GameState) usize {
+    switch (gamestate.gameDirection) {
+        .FORWARD => {
+            gamestate.turn += 1;
+            if (gamestate.turn >= gamestate.numPlayers) gamestate.turn = 0;
+        },
+        .BACKWARD => {
+            gamestate.turn -= 1;
+            if (gamestate.turn <= 0) gamestate.turn = gamestate.numPlayers - 1;
+        },
+    }
+    return gamestate.turn;
+}
+
+fn chooseColor(writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: *game.GameState) !void {
+    const cardColorNumber = try ui.chooseColorScreen(writer, reader);
+    const color: card.CardColor = switch (cardColorNumber) {
+        1 => .YELLOW,
+        2 => .RED,
+        3 => .GREEN,
+        else => .BLUE,
+    };
+
+    const currentTopCard = gamestate.topCard;
+    const newTopCard = try card.Card.init(color, currentTopCard.value);
+    gamestate.topCard = newTopCard;
+}
+
 pub fn main() !void {
     // set windows to use UTF-8 Characters
     if (builtin.os.tag == .windows) {
@@ -45,6 +73,7 @@ pub fn main() !void {
         try stdout.flush();
         try ui.setColor(stdout, .WHITE, null);
 
+        // read input
         while (true) {
             const waitInput = try stdin.takeDelimiterExclusive('\n');
             const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
@@ -54,23 +83,40 @@ pub fn main() !void {
                 break;
             }
 
-            const input = try std.fmt.parseInt(u8, trimmedInput, 10);
             const input = std.fmt.parseInt(u8, trimmedInput, 10) catch 0;
-
             const valid = gamestate.playCard(gamestate.turn, input);
             if (valid) break;
         }
 
-        switch (gamestate.gameDirection) {
-            .FORWARD => {
-                gamestate.turn += 1;
-                if (gamestate.turn >= gamestate.numPlayers) gamestate.turn = 0;
+        // TODO: Check for win condition here
+
+        // special actions for cards
+        switch (gamestate.topCard.value) {
+            .NUMBER => {},
+            .REVERSE => {
+                gamestate.gameDirection = switch (gamestate.gameDirection) {
+                    .BACKWARD => .FORWARD,
+                    .FORWARD => .BACKWARD,
+                };
             },
-            .BACKWARD => {
-                gamestate.turn -= 1;
-                if (gamestate.turn <= 0) gamestate.turn = gamestate.numPlayers - 1;
+            .SKIP => {
+                _ = nextTurn(&gamestate);
+            },
+            .DRAW2 => {
+                const nextPlayer = nextTurn(&gamestate);
+                try gamestate.drawCard(allocator, rand, nextPlayer, 2);
+            },
+            .WILD => {
+                try chooseColor(stdout, stdin, &gamestate);
+            },
+            .WILD4 => {
+                const nextPlayer = nextTurn(&gamestate);
+                try gamestate.drawCard(allocator, rand, nextPlayer, 4);
+                try chooseColor(stdout, stdin, &gamestate);
             },
         }
+
+        _ = nextTurn(&gamestate);
     }
 
     try stdout.flush();
