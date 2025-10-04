@@ -62,7 +62,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Start the Game
-    // try ui.startScreen(stdout, stdin);
+    try ui.startScreen(stdout, stdin);
     try ui.clearScreen(stdout);
 
     var gamestate = try game.GameState.init(allocator, rand);
