@@ -87,6 +87,16 @@ pub fn main() !void {
                     const waitInput = try stdin.takeDelimiterExclusive('\n');
                     const trimmedInput = std.mem.trimRight(u8, waitInput, "\r"); // remove the stupid windows \r
 
+                    if (std.mem.eql(u8, trimmedInput, "h")) {
+                        try ui.helpScreen(stdout, stdin);
+
+                        try ui.clearScreen(stdout);
+                        try ui.gameFrame(allocator, stdout, stdin, gamestate);
+                        try stdout.flush();
+                        try ui.setColor(stdout, .WHITE, null);
+                        continue;
+                    }
+
                     if (std.mem.eql(u8, trimmedInput, "d")) {
                         try gamestate.drawCard(allocator, rand, gamestate.turn, 1);
                         playedAlready = true;

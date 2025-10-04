@@ -143,7 +143,7 @@ pub fn renderCard(writer: *std.Io.Writer, card: Card, row: usize, col: usize) !v
 
     const padding: u8 = switch (value.len) {
         2 => 0,
-        else => 1
+        else => 1,
     };
     const spaces = " ";
 
@@ -198,6 +198,31 @@ pub fn chooseColorScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !u8 {
     const trimmedInput = std.mem.trimRight(u8, cardColorInput, "\r");
     const input = std.fmt.parseInt(u8, trimmedInput, 10) catch 1;
     return input;
+}
+
+pub fn helpScreen(writer: *std.Io.Writer, reader: *std.Io.Reader) !void {
+    try clearScreen(writer);
+    // bounding box
+    try placeBox(writer, 1, 1, 35, 99);
+
+    try placeTextAt(writer, "Help Screen", .{}, 2, 45);
+
+    try placeTextAt(writer, "Controls:", .{}, 5, 5);
+    try placeTextAt(writer, "- Press Enter to commit any command.", .{}, 7, 5);
+    try placeTextAt(writer, "- Press the number displayed under the card to play the card.", .{}, 9, 5);
+    try placeTextAt(writer, "- Use '>' to go to the next hand of cards.", .{}, 11, 5);
+    try placeTextAt(writer, "- Use '<' to go to the previous hand of cards.", .{}, 13, 5);
+    try placeTextAt(writer, "- Press 'd' to draw a card.", .{}, 15, 5);
+    try placeTextAt(writer, "- Press 'h' to see this help screen.", .{}, 17, 5);
+
+    try placeTextAt(writer, "Turn Order:", .{}, 20, 5);
+    try placeTextAt(writer, "- The turn order of the 2 people ahead and behind you are displayed at the top", .{}, 22, 5);
+    try placeTextAt(writer, "- An arrow indicates the direction of play.", .{}, 24, 5);
+
+    try placeTextAt(writer, "Press ENTER key to continue...", .{}, 30, 38);
+    try moveCursor(writer, 100, 900);
+    const waitInput = try reader.takeDelimiterExclusive('\n');
+    _ = waitInput;
 }
 
 fn wrapIndex(turn: usize, offset: isize, numPlayers: usize) usize {
@@ -269,7 +294,7 @@ pub fn gameFrame(allocator: Allocator, writer: *std.Io.Writer, reader: *std.Io.R
         },
         .BACKWARD => {
             try placeTextAt(writer, "<─────────────────────────────────────────────────────────────", .{}, 2, 15);
-        }
+        },
     }
     // display player line
     try displayPlayers(allocator, writer, gamestate);
@@ -306,6 +331,11 @@ pub fn gameFrame(allocator: Allocator, writer: *std.Io.Writer, reader: *std.Io.R
     // box around user input
     try placeBox(writer, 32, 3, 3, 95);
     try placeTextAt(writer, "Enter your move : ", .{}, 33, 5);
+
+    // help display
+
+    try placeTextAt(writer, "press 'h'", .{}, 15, 5);
+    try placeTextAt(writer, "for help", .{}, 16, 5);
 
     try homeCursor(writer);
 }
