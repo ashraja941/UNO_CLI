@@ -73,7 +73,6 @@ This project is still under development. Here are some of the features and impro
 
 *   [x] Implement the main game loop.
 *   [x] Implement the complete game logic for all card types.
-*   [ ] Implement AI for computer-controlled players.
-*   [ ] Add a scoring system.
-*   [ ] Improve the user interface and user experience.
-*   [ ] Add more tests to ensure the game is working correctly.
+*   [X] Implement AI for computer-controlled players.
+*   [X] Improve the user interface and user experience.
+*   [X] Add more tests to ensure the game is working correctly.
