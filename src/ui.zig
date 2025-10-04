@@ -250,6 +250,11 @@ fn displayPlayers(allocator: Allocator, writer: *std.Io.Writer, gamestate: GameS
     try writer.flush();
 }
 
+pub fn winScreen(writer: *std.Io.Writer, gamestate: GameState) !void {
+    try placeBox(writer, 1, 1, 35, 99);
+    try placeTextAt(writer, "{s} Won", .{gamestate.players.items[gamestate.turn].name}, 10, 20);
+}
+
 pub fn gameFrame(allocator: Allocator, writer: *std.Io.Writer, reader: *std.Io.Reader, gamestate: GameState) !void {
     _ = reader;
     try clearScreen(writer);

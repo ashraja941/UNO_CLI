@@ -140,6 +140,7 @@ pub fn main() !void {
 
         if (gamestate.players.items[gamestate.turn].hand.items.len == 0) {
             // TODO: Create win page
+            try ui.winScreen(stdout, gamestate);
             break;
         }
 
